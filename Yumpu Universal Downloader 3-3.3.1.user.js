@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         Yumpu Universal Downloader 3
+// @name         Yumpu Universal Downloader 5
 // @namespace    http://tampermonkey.net/
 // @version      3.3.1
 // @description  Downloads Yumpu docs. PDF/Searchable PDF (OCR), pipelined processing, client-side OCR image preprocessing, and separate TXT OCR output.
@@ -68,10 +68,21 @@
     const FETCH_TIMEOUT_MS = 90000;
     const OCR_OPERATION_TIMEOUT_MS = 120000;
 
-    function shouldScriptRun() {
+        function shouldScriptRun() {
         const isYumpuDomain = /yumpu\.com/.test(window.location.hostname);
-        if (isYumpuDomain) { return (window.location.href.includes('/embed/view/') || window.location.href.includes('/document/view/')); }
-        if (window.self !== window.top) { try { const scripts = Array.from(document.getElementsByTagName('script')); return scripts.some(s => s.textContent && s.textContent.includes('playerConfig') && s.textContent.includes('jsonUrl')); } catch (e) { /* ignore */ } }
+        if (isYumpuDomain) {
+            return (
+                window.location.href.includes('/embed/view/') ||
+                window.location.href.includes('/document/view/') ||
+                window.location.href.includes('/document/read/')
+            );
+        }
+        if (window.self !== window.top) { // For iframes
+            try {
+                const scripts = Array.from(document.getElementsByTagName('script'));
+                return scripts.some(s => s.textContent && s.textContent.includes('playerConfig') && s.textContent.includes('jsonUrl'));
+            } catch (e) { /* ignore */ }
+        }
         return false;
     }
     if (!shouldScriptRun()) { return; }
